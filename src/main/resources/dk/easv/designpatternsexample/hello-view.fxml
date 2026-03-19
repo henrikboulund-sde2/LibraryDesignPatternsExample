@@ -1,16 +1,234 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="dk.easv.designpatternsexample.HelloController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
+<!--
+    Main view for the Design Patterns demo application.
+    Three tabs — one per design pattern — all backed by the same BookRepository.
 
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
+    The fx:controller attribute tells the FXMLLoader which Java class handles events and @FXML fields.
+-->
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dk.easv.designpatternsexample.ui.MainController">
+
+    <!-- ===================================================================== -->
+    <!-- HEADER                                                                  -->
+    <!-- ===================================================================== -->
+    <HBox style="-fx-background-color: #f0f4f8;
+                 -fx-border-color: #d0d8e0;
+                 -fx-border-width: 0 0 1 0;">
+        <padding><Insets top="14" right="16" bottom="10" left="16"/></padding>
+        <VBox spacing="2">
+            <Label text="Design Patterns Example — Book Library"
+                   style="-fx-font-weight: bold; -fx-font-size: 18;"/>
+            <Label text="Repository  ·  Command  ·  Iterator"
+                   style="-fx-font-size: 13; -fx-text-fill: gray;"/>
+        </VBox>
+    </HBox>
+
+    <!-- ===================================================================== -->
+    <!-- TAB PANE                                                                -->
+    <!-- ===================================================================== -->
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <tabs>
+
+            <!-- ============================================================= -->
+            <!-- TAB 1 — Repository Pattern                                      -->
+            <!-- ============================================================= -->
+            <Tab text="Repository Pattern">
+                <content>
+                    <VBox spacing="12">
+                        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+                        <Label text="Repository Pattern"
+                               style="-fx-font-weight: bold; -fx-font-size: 15;"/>
+                        <Label text="IBookRepository defines the contract for data access. BookRepository is the concrete in-memory implementation. The UI only ever talks to the interface — the storage mechanism is hidden."
+                               wrapText="true"
+                               style="-fx-font-style: italic; -fx-text-fill: slategray;"/>
+                        <Separator/>
+
+                        <Label text="Add a new book:"/>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <TextField fx:id="repoTitleField"  promptText="Title"  prefWidth="150"/>
+                            <TextField fx:id="repoAuthorField" promptText="Author" prefWidth="150"/>
+                            <ComboBox  fx:id="repoGenreBox"    promptText="Genre"  prefWidth="110"/>
+                            <TextField fx:id="repoYearField"   promptText="Year"   prefWidth="70"/>
+                            <Button text="Add to Repository"
+                                    onAction="#onRepoAdd"
+                                    style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                        </HBox>
+
+                        <Button text="Remove Selected"
+                                onAction="#onRepoRemove"
+                                style="-fx-background-color: #e53935; -fx-text-fill: white;"/>
+                        <Separator/>
+
+                        <Label text="All books in the repository:"/>
+                        <TableView fx:id="repoTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="repoIdCol"     text="ID"     prefWidth="45"/>
+                                <TableColumn fx:id="repoTitleCol"  text="Title"  prefWidth="220"/>
+                                <TableColumn fx:id="repoAuthorCol" text="Author" prefWidth="160"/>
+                                <TableColumn fx:id="repoGenreCol"  text="Genre"  prefWidth="100"/>
+                                <TableColumn fx:id="repoYearCol"   text="Year"   prefWidth="60"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </content>
+            </Tab>
+
+            <!-- ============================================================= -->
+            <!-- TAB 2 — Command Pattern                                         -->
+            <!-- ============================================================= -->
+            <Tab text="Command Pattern">
+                <content>
+                    <!--
+                        SplitPane: left = operations + book list, right = command history log.
+                        dividerPositions sets the initial split at 65% / 35%.
+                    -->
+                    <SplitPane dividerPositions="0.65">
+
+                        <!-- LEFT: form + table -->
+                        <VBox spacing="12">
+                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+                            <Label text="Command Pattern"
+                                   style="-fx-font-weight: bold; -fx-font-size: 15;"/>
+                            <Label text="Each operation (add / remove) is wrapped in an ICommand object with execute() and undo(). The CommandManager stores executed commands on a stack. Pressing 'Undo' pops the last command and calls its undo() method."
+                                   wrapText="true"
+                                   style="-fx-font-style: italic; -fx-text-fill: slategray;"/>
+                            <Separator/>
+
+                            <Label text="Add a book via command:"/>
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <TextField fx:id="cmdTitleField"  promptText="Title"  prefWidth="150"/>
+                                <TextField fx:id="cmdAuthorField" promptText="Author" prefWidth="150"/>
+                                <ComboBox  fx:id="cmdGenreBox"    promptText="Genre"  prefWidth="110"/>
+                                <TextField fx:id="cmdYearField"   promptText="Year"   prefWidth="70"/>
+                                <Button text="Execute: AddBookCommand"
+                                        onAction="#onCmdAdd"
+                                        style="-fx-background-color: #1976D2; -fx-text-fill: white;"/>
+                            </HBox>
+
+                            <Button text="Execute: RemoveBookCommand"
+                                    onAction="#onCmdRemove"
+                                    style="-fx-background-color: #F57C00; -fx-text-fill: white;"/>
+
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <Button text="⟵  Undo Last Command" onAction="#onUndo"/>
+                                <Label fx:id="undoStatusLabel"
+                                       text="No commands in history."
+                                       style="-fx-text-fill: gray;"/>
+                            </HBox>
+                            <Separator/>
+
+                            <Label text="Books in repository:"/>
+                            <TableView fx:id="cmdTable" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="cmdIdCol"     text="ID"     prefWidth="45"/>
+                                    <TableColumn fx:id="cmdTitleCol"  text="Title"  prefWidth="220"/>
+                                    <TableColumn fx:id="cmdAuthorCol" text="Author" prefWidth="160"/>
+                                    <TableColumn fx:id="cmdGenreCol"  text="Genre"  prefWidth="100"/>
+                                    <TableColumn fx:id="cmdYearCol"   text="Year"   prefWidth="60"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+
+                        <!-- RIGHT: command history -->
+                        <VBox spacing="10">
+                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+                            <Label text="Command History"
+                                   style="-fx-font-weight: bold; -fx-font-size: 15;"/>
+                            <Label text="Most recent command is at the top."/>
+                            <ListView fx:id="commandHistoryView" VBox.vgrow="ALWAYS"/>
+                        </VBox>
+
+                    </SplitPane>
+                </content>
+            </Tab>
+
+            <!-- ============================================================= -->
+            <!-- TAB 3 — Iterator Pattern                                        -->
+            <!-- ============================================================= -->
+            <!--
+                onSelectionChanged fires when the tab is selected OR deselected.
+                The handler checks tab.isSelected() to only refresh on selection.
+                This keeps the genre ComboBox in sync with the current repository data.
+            -->
+            <Tab text="Iterator Pattern" onSelectionChanged="#onIteratorTabSelected">
+                <content>
+                    <VBox spacing="12">
+                        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+                        <Label text="Iterator Pattern"
+                               style="-fx-font-weight: bold; -fx-font-size: 15;"/>
+                        <Label text="IBookIterator provides hasNext(), next(), and reset() — a standard way to walk through a collection without knowing the underlying data structure. GenreBookIterator filters books by genre and holds an immutable snapshot."
+                               wrapText="true"
+                               style="-fx-font-style: italic; -fx-text-fill: slategray;"/>
+                        <Separator/>
+
+                        <!-- Genre selector row -->
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="Genre:"/>
+                            <ComboBox fx:id="iterGenreBox" promptText="Select genre" prefWidth="160"/>
+                            <Button text="Create Iterator"
+                                    onAction="#onCreateIterator"
+                                    style="-fx-background-color: #6A1B9A; -fx-text-fill: white;"/>
+                        </HBox>
+
+                        <Label fx:id="iterStatusLabel"
+                               text="Select a genre and press 'Create Iterator'."
+                               style="-fx-text-fill: slategray;"/>
+                        <Separator/>
+
+                        <!-- Navigation buttons -->
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Button fx:id="resetIterBtn"
+                                    text="⟵  Reset"
+                                    disable="true"
+                                    onAction="#onIterReset"/>
+                            <Button fx:id="nextBtn"
+                                    text="Next Book  →"
+                                    disable="true"
+                                    onAction="#onIterNext"
+                                    style="-fx-background-color: #6A1B9A; -fx-text-fill: white;"/>
+                        </HBox>
+
+                        <!--
+                            Book card — hidden until the first "Next" is pressed.
+                            managed="false" means it takes up no space when invisible.
+                        -->
+                        <VBox fx:id="bookCard"
+                              spacing="6"
+                              visible="false"
+                              managed="false"
+                              style="-fx-background-color: #f3e5f5;
+                                     -fx-border-color: #ce93d8;
+                                     -fx-border-radius: 6;
+                                     -fx-background-radius: 6;">
+                            <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+                            <Label text="Currently viewing:"/>
+                            <Label fx:id="cardTitle"  style="-fx-font-weight: bold; -fx-font-size: 15;"/>
+                            <Label fx:id="cardAuthor"/>
+                            <Label fx:id="cardGenre"/>
+                            <Label fx:id="cardYear"/>
+                        </VBox>
+
+                        <!-- Progress row -->
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <ProgressBar fx:id="progressBar" progress="0" prefWidth="300"/>
+                            <Label fx:id="progressLabel" text="0 / 0"/>
+                        </HBox>
+
+                    </VBox>
+                </content>
+            </Tab>
+
+        </tabs>
+    </TabPane>
+
 </VBox>
